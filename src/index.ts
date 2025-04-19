@@ -1,4 +1,3 @@
-module.exports = {
-    WebpackBuildAnalyzerPlugin: require('./plugins/webpack/WebpackBuildAnalyzerPlugin.ts'),
-    ResolvePlugin: require('./plugins/enhanced-resolve/ResolvePlugin.ts')
-};
+import WebpackBuildAnalyzerPlugin from './webpack/WebpackBuildAnalyzerPlugin';
+
+export { WebpackBuildAnalyzerPlugin };

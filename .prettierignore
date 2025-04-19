@@ -1,0 +1,6 @@
+.editorconfig
+.gitignore
+.prettierignore
+.package-lock.json
+commit-msg
+pre-commit
