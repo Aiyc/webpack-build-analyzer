@@ -1,7 +1,6 @@
 import { Compiler, WebpackPluginInstance } from 'webpack';
 import type { NodeData, EdgeData } from '@antv/g6';
-
-type moduleType = '' | 'javascript/auto' | 'javascript/dynamic' | 'javascript/esm' | 'runtime';
+import { sendMessage } from '../../socket';
 
 const getNodeId = (moduleId?: string) => {
   if (moduleId && moduleId.startsWith('external var')) {
@@ -67,11 +66,14 @@ class AssetsResultAnalyzerPlugin implements WebpackPluginInstance {
         });
       });
 
-      const data = {
-        nodes,
-        edges,
-      };
-      console.log(data);
+      // 发送websocket
+      sendMessage({
+        type: 'assets_analyzer',
+        data: {
+          nodes,
+          edges,
+        },
+      });
     });
   }
 }

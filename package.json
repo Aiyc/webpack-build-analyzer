@@ -2,7 +2,15 @@
   "name": "@aiwen/webpack-build-analyzer",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/Aiyc/webpack-build-analyzer/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aiyc/webpack-build-analyzer"
+  },
+  "license": "MIT",
+  "main": "dist/index.cjs",
   "scripts": {
     "prepare": "husky install",
     "build": "tsc --noEmit && node esbuild-build.js",
@@ -14,7 +22,7 @@
     "@commitlint/config-conventional": "^19.8.0",
     "@eslint/config-helpers": "^0.2.1",
     "@types/node": "^22.14.1",
-    "@types/webpack": "^5.28.5",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.30.1",
     "esbuild": "0.25.2",
     "eslint": "^8.57.1",
@@ -27,9 +35,11 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "webpack": "5.99.6"
   },
   "dependencies": {
-    "@antv/g6": "^5.0.45"
+    "@antv/g6": "^5.0.45",
+    "ws": "^8.18.1"
   }
 }
