@@ -21,6 +21,8 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@eslint/config-helpers": "^0.2.1",
+    "@types/express": "^5.0.1",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.14.1",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.30.1",
@@ -40,6 +42,9 @@
   },
   "dependencies": {
     "@antv/g6": "^5.0.45",
+    "express": "^5.1.0",
+    "fs-extra": "^11.3.0",
+    "open": "^10.1.1",
     "ws": "^8.18.1"
   }
 }
