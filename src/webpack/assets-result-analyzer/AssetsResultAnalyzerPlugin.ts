@@ -1,14 +1,13 @@
-import { Compiler, WebpackPluginInstance } from 'webpack';
-import type { NodeData, EdgeData } from '@antv/g6';
+import {
+  Compiler,
+  WebpackPluginInstance,
+  StatsCompilation,
+  StatsChunk,
+  Compilation,
+  Chunk,
+} from 'webpack';
 import { sendMessage } from '../../socket';
-
-const getNodeId = (moduleId?: string) => {
-  if (moduleId && moduleId.startsWith('external var')) {
-    return moduleId.replace('external var', '扩展（external）模块');
-  } else {
-    return moduleId;
-  }
-};
+import { shareData } from '../../share-data';
 
 const nodeColor: Record<moduleType, string> = {
   'javascript/esm': 'red',
@@ -18,61 +17,68 @@ const nodeColor: Record<moduleType, string> = {
   '': 'red',
 };
 
-const minSize = 10;
-const maxSize = 30;
+const convertStatsJson = (statsJson: StatsCompilation, compilation: Compilation): AssetsResult => {
+  const chunkMap = new Map<string | number, Chunk>();
+  compilation.chunks.forEach((chunk) => {
+    if (chunk.id !== null) {
+      chunkMap.set(chunk.id, chunk);
+    }
+  });
+
+  return {
+    chunks: (statsJson.chunks ?? []).map((statsChunk: StatsChunk): AssetsChunk => {
+      const chunk = chunkMap.get(statsChunk.id!);
+      let entryId: string | null = null;
+      if (chunk && chunk.entryModule) {
+        entryId = chunk.entryModule.identifier();
+      }
+      return {
+        modules: (statsChunk.modules ?? [])
+          .filter((module) => {
+            // 去掉webpack runtime
+            return module.moduleType !== 'runtime';
+          })
+          .map((statsModule) => {
+            const __ANALYZER_EXTRA_DATA__ = shareData.moduleMap.get(statsModule.identifier!) || {
+              externalFlag: true,
+              originalModuleName: statsModule.identifier,
+            };
+            return {
+              moduleName: statsModule.name!,
+              moduleId: statsModule.identifier!,
+              moduleType: statsModule.moduleType! as moduleType,
+              moduleSize: statsModule.size!,
+              parentModuleIds: (statsModule.issuerPath ?? []).map((issuer) => issuer.identifier),
+              belongToChunks: statsModule.chunks!,
+              extraMeta: {
+                originalModuleName: __ANALYZER_EXTRA_DATA__.originalModuleName,
+                thirdPartyLibFlag: __ANALYZER_EXTRA_DATA__.thirdPartyLibFlag,
+                externalFlag: __ANALYZER_EXTRA_DATA__.externalFlag,
+                entryFlag: entryId === statsModule.identifier!,
+              },
+            };
+          }),
+        chunkNames: statsChunk.names,
+        chunkFileName: statsChunk.fileName,
+        chunkFileSize: statsChunk.fileSize,
+      };
+    }),
+    bundlerVersions: statsJson.version!,
+    buildTotalTime: statsJson.time!,
+    buildOutPath: statsJson.outputPath!,
+  };
+};
 
 const PLUGIN_NAME = 'webpack-build-analyzer';
 class AssetsResultAnalyzerPlugin implements WebpackPluginInstance {
   apply(compiler: Compiler) {
     compiler.hooks.done.tap(PLUGIN_NAME, (stats) => {
-      const statsJson = stats.toJson();
-
-      let min = Infinity;
-      let max = 0;
-      statsJson.modules?.forEach((module) => {
-        min = Math.min(min, module.size ?? 0);
-        max = Math.max(max, module.size ?? 0);
-      });
-
-      const ratio = (maxSize - minSize) / (max - min);
-      const nodes: NodeData[] = [];
-      const edges: EdgeData[] = [];
-
-      statsJson.chunks?.forEach((chunk) => {
-        chunk.modules?.forEach((module) => {
-          const id = getNodeId(module.identifier) ?? '';
-          nodes.push({
-            id: id,
-            style: {
-              fill: nodeColor[module.moduleType as moduleType],
-              size: ratio * (module.size ?? 0),
-              // 节点上显示的label
-              label: true,
-              labelText: id,
-            },
-            data: {
-              chunk: {
-                chunkFiles: chunk.files.join(';'),
-              },
-              moduleSize: module.size,
-            },
-          });
-          if (module.issuer) {
-            edges.push({
-              source: getNodeId(module.issuer) ?? '',
-              target: id,
-            });
-          }
-        });
-      });
+      const assetsResult = convertStatsJson(stats.toJson(), stats.compilation);
 
       // 发送websocket
       sendMessage({
         type: 'assets_analyzer',
-        data: {
-          nodes,
-          edges,
-        },
+        data: assetsResult,
       });
     });
   }

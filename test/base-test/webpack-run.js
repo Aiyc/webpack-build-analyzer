@@ -1,7 +1,7 @@
 const path = require('node:path');
 
 const webpack = require('webpack');
-const { WebpackBuildAnalyzerPlugin } = require('../../dist/index.cjs');
+const { WebpackBuildAnalyzerPlugin, ResolvePlugin } = require('../../dist/index.cjs');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const config = {
@@ -15,12 +15,15 @@ const config = {
     alias: {
       '@depC': path.resolve(__dirname, './src/depC.js'),
     },
-    // plugins: [new ResolvePlugin()]
+    plugins: [new ResolvePlugin()],
   },
   externals: {
     vue: 'Vue',
   },
-  plugins: [new WebpackBuildAnalyzerPlugin()],
+  plugins: [
+    new WebpackBuildAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin()
+  ],
 };
 
 const compiler = webpack(config);

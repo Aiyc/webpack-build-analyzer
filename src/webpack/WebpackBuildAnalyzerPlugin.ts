@@ -1,10 +1,14 @@
 import { Compiler, WebpackPluginInstance } from 'webpack';
 import AssetsResultAnalyzerPlugin from './assets-result-analyzer/AssetsResultAnalyzerPlugin';
 import AnalyzerTemplatesRun from './analyzer-templates-run/AnalyzerTemplatesRun';
+import TestPlugin from './TestPlugin';
 
 const PLUGIN_NAME = 'webpack-build-analyzer';
 class WebpackBuildAnalyzerPlugin implements WebpackPluginInstance {
   apply(compiler: Compiler) {
+    // 测试
+    new TestPlugin().apply(compiler);
+
     // 分析编译结果assets
     new AssetsResultAnalyzerPlugin().apply(compiler);
 
