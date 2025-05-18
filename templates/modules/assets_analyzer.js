@@ -97,8 +97,8 @@
         </style>
         <div>
           <p>
-            <div class="key">原始导入模块名：</div>
-            <div class="value">${data.extraMeta.originalModuleName}</div>
+            <div class="key">模块原始引入路径：</div>
+            <div class="value">${data.extraMeta.originalImportPath}</div>
           </p>
           <p>
             <div class="key">模块名称：</div>

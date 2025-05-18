@@ -14,6 +14,7 @@
   "scripts": {
     "prepare": "husky install",
     "build": "tsc --noEmit && node esbuild-build.js",
+    "test": "npm run build && node ./test/base-test/webpack-run.js",
     "fix": "eslint src --fix --ext .ts,.js"
   },
   "private": true,

@@ -5,12 +5,19 @@ const { WebpackBuildAnalyzerPlugin, ResolvePlugin } = require('../../dist/index.
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const config = {
-  entry: './src/index.js',
-  output: {
-    filename: 'bundle.js',
-    path: __dirname + '/dist',
+  entry: {
+    index: path.resolve(__dirname, './src/index.js'),
+    // index1: {
+    //   import: path.resolve(__dirname, './src/index1.js'),
+    //   dependOn: ['index']
+    // }
   },
-  mode: 'development',
+  output: {
+    clean: true,
+    filename: '[name].js',
+    path: path.resolve(__dirname, './dist'),
+  },
+  mode: 'production',
   resolve: {
     alias: {
       '@depC': path.resolve(__dirname, './src/depC.js'),
@@ -33,5 +40,5 @@ compiler.run((err, stats) => {
     console.error(err);
     return;
   }
-  console.log(stats.toString({ colors: true })); // 输出编译信息
+  // console.log(stats.toString({ colors: true })); // 输出编译信息
 });

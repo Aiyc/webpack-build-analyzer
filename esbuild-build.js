@@ -45,5 +45,5 @@ esbuild
   })
   .then((result) => {
     console.log('编译完成');
-    console.log(result);
+    // console.log(result);
   });

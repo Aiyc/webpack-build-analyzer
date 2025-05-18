@@ -2,7 +2,7 @@
  * @filename: lint-staged.config.js
  * @type {import('lint-staged').Configuration}
  */
-export default {
+module.exports = {
   '!(src/*.{ts,js})': 'prettier --write',
   '(src/*.{js,ts})': ['eslint --fix'],
 };

@@ -1,47 +1,34 @@
 import { Resolver } from 'webpack';
-import { shareData } from '../share-data';
+import { resolveTrackMap, resolverMap, moduleOriginalImportPathMap } from '../share-data';
 
-let resolverId = 1;
-const normalResolverMap = new Map<number, Resolver>();
+let i = 1;
+let t = 1;
 
 const PLUGIN_NAME = 'ResolvePlugin';
 class ResolvePlugin {
   constructor() {}
 
   apply(resolver: Resolver) {
-    const currentResolverId = resolverId++;
-    // TODO 什么情况下modules是二维数组？
-    const thirdPartyLibPath = resolver.options.modules as string[];
-    normalResolverMap.set(currentResolverId, resolver);
+    const resolverId = i++;
+    resolverMap.set(resolverId, resolver);
 
+    // 相同的原始引入路径不会被重复解析，路径不同即使引入的是相同的模块，也会被重新解析
     resolver.getHook('resolve').tapAsync(PLUGIN_NAME, (request, context, callback) => {
-      console.log(request.request);
       // @ts-ignore
-      request.__ANALYZER_META__ = {
-        originalModuleName: request.request,
-        thirdPartyLibPath,
-        currentResolverId,
-        // @ts-ignore
-        parentModuleId: request.context!.issuer,
-      };
+      request.__RESOLVE_TRACK_ID__ = t++;
+      // @ts-ignore
+      resolveTrackMap.set(request.__RESOLVE_TRACK_ID__, {
+        resolverId,
+      });
+      console.log('resolve', request.request);
       callback();
     });
 
-    resolver.hooks.result.tapAsync(PLUGIN_NAME, (request, context, callback) => {
-      // TODO request.path 有可能是boolean类型
-      if (!shareData.moduleMap.has(request.path as string)) {
-        shareData.moduleMap.set(request.path as string, []);
-      }
-
-      // @ts-ignore
-      request.__ANALYZER_META__.thirdPartyLibFlag = thirdPartyLibPath.some(
-        (path) => request.path.indexOf(path) > -1,
-      );
-      // @ts-ignore
-      shareData.moduleMap.get(request.path as string).push(request.__ANALYZER_META__);
-
-      callback();
-    });
+    // resolver.hooks.result.tapAsync(PLUGIN_NAME, (request, context, callback) => {
+    //
+    //   console.log('result', request.path)
+    //   callback();
+    // });
   }
 }
 
